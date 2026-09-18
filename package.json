@@ -1,0 +1,88 @@
+{
+  "name": "seaport-data-js",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "A comprehensive TypeScript library providing easy retrieval of seaport data based on UN/LOCODE, country codes, harbor characteristics, and facilities. Sourced from the NGA World Port Index. Includes LLM tool definitions for AI integration.",
+  "main": "lib/index.js",
+  "types": "types/index.d.ts",
+  "browser": "dist/seaport-data.min.js",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./tools": {
+      "types": "./types/tools.d.ts",
+      "require": "./lib/tools.js",
+      "default": "./lib/tools.js"
+    }
+  },
+  "files": [
+    "lib/",
+    "dist/",
+    "types/",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build:types": "tsc --emitDeclarationOnly",
+    "build:transpile": "tsc -p tsconfig.build.json",
+    "build:lib": "webpack --config webpack.node.cjs",
+    "build:dist": "webpack --config webpack.browser.cjs",
+    "build:tools": "webpack --config webpack.tools.cjs",
+    "build": "npm run build:types && npm run build:transpile && npm run build:lib && npm run build:dist && npm run build:tools",
+    "check:duplicates": "tsx scripts/check_duplicates.ts",
+    "generate:compressed": "tsx scripts/compress_json.ts"
+  },
+  "dependencies": {
+    "pako": "^3.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aashishvanand/seaport-data-js.git"
+  },
+  "keywords": [
+    "seaport",
+    "seaports",
+    "port",
+    "ports",
+    "unlocode",
+    "un-locode",
+    "world-port-index",
+    "maritime",
+    "shipping",
+    "logistics",
+    "harbor",
+    "geography",
+    "codes",
+    "country",
+    "nga",
+    "pub150"
+  ],
+  "author": "Aashish Vivekanand",
+  "license": "CC BY 4.0",
+  "engines": {
+    "node": "^22.18.0 || >=24.11.0"
+  },
+  "bugs": {
+    "url": "https://github.com/aashishvanand/seaport-data-js/issues"
+  },
+  "homepage": "https://github.com/aashishvanand/seaport-data-js",
+  "devDependencies": {
+    "@babel/core": "^8.0.5",
+    "@babel/plugin-transform-modules-commonjs": "^8.0.1",
+    "@babel/preset-env": "^8.0.5",
+    "@types/node": "^26.1.1",
+    "babel-loader": "^10.1.1",
+    "fs-extra": "^11.4.0",
+    "path-browserify": "^1.0.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0",
+    "webpack": "^5.110.3",
+    "webpack-cli": "^7.2.3"
+  }
+}
