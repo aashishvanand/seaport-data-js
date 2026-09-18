@@ -1,0 +1,106 @@
+name: Release and Publish
+on:
+  push:
+    branches:
+      - release
+  workflow_dispatch: # Allow manual triggering
+
+permissions: read-all
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22.x, 24.x]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Security Audit
+        run: npm audit --audit-level=critical
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Check for duplicate port keys
+        run: npm run check:duplicates
+
+      - name: Build package
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/release'
+    permissions:
+      contents: write
+      id-token: write # For provenance
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for duplicate port keys
+        run: npm run check:duplicates
+
+      - name: Build package
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Check if version already published
+        id: check-version
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          NPM_VERSION=$(npm view seaport-data-js version 2>/dev/null || echo "0.0.0")
+          echo "package-version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          echo "npm-version=$NPM_VERSION" >> $GITHUB_OUTPUT
+          if [ "$PACKAGE_VERSION" != "$NPM_VERSION" ]; then
+            echo "should-publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-publish=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to NPM
+        if: steps.check-version.outputs.should-publish == 'true'
+        run: npm publish --provenance --access public
+
+      - name: Create GitHub Release
+        if: steps.check-version.outputs.should-publish == 'true'
+        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e # v1 (latest)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.check-version.outputs.package-version }}
+          release_name: Release v${{ steps.check-version.outputs.package-version }}
+          draft: false
+          prerelease: false
+
+      - name: Skip publish (version unchanged)
+        if: steps.check-version.outputs.should-publish == 'false'
+        run: |
+          echo "Version ${{ steps.check-version.outputs.package-version }} is already published on NPM"
+          echo "Skipping publish step"
