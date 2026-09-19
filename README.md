@@ -1,70 +1,47 @@
-# seaport-data-js
+# Seaport Data React Sample
 
-A comprehensive TypeScript library for retrieving seaport data by UN/LOCODE, country, harbor characteristics, and facilities — sourced from the NGA World Port Index (Pub. 150). Includes LLM tool definitions for AI integration.
+A React application demonstrating [`seaport-data-js`](https://www.npmjs.com/package/seaport-data-js) — search, browse, and visualize seaport data sourced from the NGA World Port Index.
 
-Sibling project to [airport-data-js](https://github.com/aashishvanand/airport-data-js).
+This is the `reactjs-sample` branch of the [seaport-data-js](https://github.com/aashishvanand/seaport-data-js) repository (the `main` branch holds the library itself). It mirrors the structure of [airport-data-js's `reactjs-sample` branch](https://github.com/aashishvanand/airport-data-js/tree/reactjs-sample).
 
-## Install
+## Features
+
+- **Search** — by UN/LOCODE, name (with autocomplete), country code, harbor size, or harbor type
+- **Statistics** — port counts by harbor size/type and container-facility coverage for a given country
+- **Deepest Ports** — rank ports within a country by channel depth or max vessel draft
+- **Distance Calculator** — great-circle distance between two ports, with a map
+- **Nearby Ports** — find ports within a radius of any coordinate (or your current location)
+- **Validation** — check whether a UN/LOCODE exists in the dataset
+- **Interactive Map** — Leaflet-based, dark/light theme aware
+- **Libraries** — links to `seaport-data-js` and its sibling `airport-data-js`
+
+## Getting Started
 
 ```bash
-npm install seaport-data-js
+npm install
+npm run dev
 ```
 
-## Usage
+Visit the printed local URL (default `http://localhost:3000`).
 
-```typescript
-import { getPortByLocode, findPorts, findNearestPort } from 'seaport-data-js';
+### Build & deploy
 
-const [rotterdam] = await getPortByLocode('NLRTM');
-console.log(rotterdam.name, rotterdam.channel_depth_m); // "Rotterdam" 11
-
-const largeSgPorts = await findPorts({ country_code: 'SG', harbor_size: 'Large' });
-
-const nearest = await findNearestPort(1.29, 103.85);
-console.log(nearest?.name, nearest?.distance); // nearest port + km
+```bash
+npm run build
+npm run deploy   # deploys to Cloudflare Workers via wrangler
 ```
 
-### LLM tool-calling
+## Stack
 
-```typescript
-import { portTools } from 'seaport-data-js/tools';
+- [vinext](https://www.npmjs.com/package/vinext) (Next.js-compatible app router on Vite) + React 19
+- MUI v7
+- Leaflet / react-leaflet for maps
+- Deployed on Cloudflare Workers
 
-const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    messages: [...],
-    tools: portTools.map(t => ({
-        name: t.name,
-        description: t.description,
-        input_schema: t.parameters,
-    })),
-});
-```
+## Data note
 
-## API
-
-- `getPortByLocode(locode)` — look up by 5-character UN/LOCODE (e.g. `"SGKEP"`)
-- `getPortsByCountryCode(countryCode)` — all ports in a country
-- `searchByName(query)` — substring match on name/alternate name
-- `getAutocompleteSuggestions(query)` — up to 10 prefix matches
-- `findNearbyPorts(lat, lon, radiusKm?)` — ports within a radius, nearest-first
-- `findNearestPort(lat, lon, filters?)` — single nearest match
-- `findPorts(filters)` — combine filters (country, harbor size/type, min channel depth, container/dry dock/pilotage flags)
-- `getPortCount(filters?)`
-- `getMultiplePorts(locodes[])`
-- `calculateDistance(locode1, locode2)`
-- `calculateDistanceMatrix(locodes[])`
-- `getPortStatsByCountry(countryCode)`
-- `validateLocode(code)`
-
-See `types/index.d.ts` for the full `Port` interface (harbor size/type, depths, pilotage, tugs, cranes, lifts, supplies, repairs, dry dock, etc.).
-
-## Data
-
-- **Source**: [NGA World Port Index](https://msi.nga.mil/Publications/WPI) (Pub. 150), April 2025 edition — a public-domain work of the U.S. Government. 3,802 ports after deduplication.
-- **Primary key**: `wpi_number` (NGA's own stable port ID). `locode` (UN/LOCODE) is populated for ~88% of ports; minor terminals without an assigned LOCODE have `locode: null`.
-- **Important**: most boolean facility/service fields (cranes, pilotage, supplies, etc.) use three states — `true`, `false`, or `null` (meaning "not recorded by NGA", not "absent"). Don't treat `null`/missing as `false` — WPI's own coverage of these fields is sparse for many smaller ports.
-- Data is refreshed by re-running `scripts/clean_wpi.py` (or its future TS equivalent) against a fresh WPI pull and regenerating `data/ports.json` → `src/ports.data.json` via `npm run generate:compressed`.
+`seaport-data-js` sources its port data from the public-domain [NGA World Port Index](https://msi.nga.mil/Publications/WPI) (Pub. 150). See the `main` branch's README for full data provenance and licensing details.
 
 ## License
 
-CC BY 4.0 for this compilation and the library code. The underlying World Port Index data is a U.S. Government work and is public domain. See `LICENSE`.
+CC BY 4.0. See [LICENSE](LICENSE).
