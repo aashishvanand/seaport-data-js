@@ -30,8 +30,8 @@ const libraries: Library[] = [
         githubUrl: 'https://github.com/aashishvanand/seaport-data-js',
         registryUrl: 'https://www.npmjs.com/package/seaport-data-js',
         registryLabel: 'npm',
-        icon: 'JS',
-        color: '#f7df1e',
+        icon: 'SP',
+        color: '#0369a1',
     },
     {
         name: 'airport-data-js',
