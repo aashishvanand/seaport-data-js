@@ -1,6 +1,6 @@
 {
   "name": "seaport-data-js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "commonjs",
   "description": "A comprehensive TypeScript library providing easy retrieval of seaport data based on UN/LOCODE, country codes, harbor characteristics, and facilities. Sourced from the NGA World Port Index. Includes LLM tool definitions for AI integration.",
   "main": "lib/index.js",
