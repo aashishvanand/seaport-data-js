@@ -90,14 +90,12 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.check-version.outputs.should-publish == 'true'
-        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e # v1 (latest)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.check-version.outputs.package-version }}
-          release_name: Release v${{ steps.check-version.outputs.package-version }}
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.check-version.outputs.package-version }}" \
+            --title "Release v${{ steps.check-version.outputs.package-version }}" \
+            --generate-notes
 
       - name: Skip publish (version unchanged)
         if: steps.check-version.outputs.should-publish == 'false'
